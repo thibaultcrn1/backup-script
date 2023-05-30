@@ -31,27 +31,27 @@ app_backup() {
     fi
     if [ -d "$app_directory" ]; then
         if [ "$(find "$backup_directory" -maxdepth 1 -type d | wc -l)" -gt 1 ]; then
-            echo "[BACKUP] - Le contenu du répertoire $backup_directory a été supprimé. Vous pouvez redémarrer le script pour effectuer une backup.";
+            echo "[BACKUP - $date] - Le contenu du répertoire $backup_directory a été supprimé. Vous pouvez redémarrer le script pour effectuer une backup.";
             rm -rf $backup_directory;
             sleep 1;
             mkdir $backup_directory;
             return;
         else
             for app in "$app_directory"/*; do
-                echo "[BACKUP] - Enregistrement de ($(basename "$app")) dans le répertoire $backup_directory."
+                echo "[BACKUP - $date] - Enregistrement de ($(basename "$app")) dans le répertoire $backup_directory."
                 file_export=$backup_directory/$(basename "$app")-backup-app
                 cp -r $app $file_export;
-                echo "[BACKUP] - Compression du répertoire $(basename "$app")-backup..."
+                echo "[BACKUP - $date] - Compression du répertoire $(basename "$app")-backup..."
                 tar -czf $(basename "$file_export")-app$date.tar.gz $backup_directory/$(basename "$app")-backup-app
                 sleep 0.5;
             done;
 
-            echo "[BACKUP] - La backup a été créé avec succès." & echo "[BACKUP - $date] - La backup a été créé avec succès." >> $log_file;
+            echo "[BACKUP - $date] - La backup a été créé avec succès."
             rm -rf $backup_directory;
 
         fi
     else
-            echo "[BACKUP] - Le chemin vers le répertoire contenant les applications est invalide, merci de le modifier.";
+            echo "[BACKUP - $date] - Le chemin vers le répertoire contenant les applications est invalide, merci de le modifier.";
         return;
     fi
 }
@@ -61,9 +61,9 @@ database_backup() {
         for db_name in "${db_names[@]}"; do
             mysqldump --host=$db_host --user=$db_user --password=$db_password --lock-tables $db_name > "$db_name-backup-db$date.sql"
             if [ $? -eq 0 ]; then
-                echo "[BACKUP] - Enregistrement de la base ($db_name) dans le répertoire courrant." & echo "[BACKUP - $date] - Enregistrement de la base ($db_name) dans le répertoire courrant." >> $log_file;
+                echo "[BACKUP - $date] - Enregistrement de la base ($db_name) dans le répertoire courrant."
             else
-                echo "[BACKUP] - Un erreur s'est produite lors de l'enregistrement de la backup de la base de donnée ($db_name)." & echo "[BACKUP - $date] - Une erreur s'est produite lors de l'enregistrement de la backup de la base de donnée ($db_name)." >> $log_file;
+                echo "[BACKUP - $date] - Un erreur s'est produite lors de l'enregistrement de la backup de la base de donnée ($db_name)."
             fi
         done
         if [ ${#pg_names[@]} -gt 0 ]; then
@@ -71,9 +71,9 @@ database_backup() {
                 export PGPASSWORD="pg_password"
                 pg_dump -h "$pg_host" -p "$pg_port" -U "$pg_user" -d "$pg_name" -f "$pg_name-backup-db-postgres$date.sql"
                 if [ $? -eq 0 ]; then
-                    echo "[BACKUP] - Enregistrement de la base postgres ($pg_name) dans le répertoire courrant." & echo "[BACKUP - $date] - Enregistrement de la base postgres ($pg_name) dans le répertoire courrant." >> $log_file;
+                    echo "[BACKUP - $date] - Enregistrement de la base postgres ($pg_name) dans le répertoire courrant." & echo "[BACKUP - $date]"
                 else
-                    echo "[BACKUP] - Un erreur s'est produite lors de l'enregistrement de la backup de la base de donnée postgres ($pg_name)." & echo "[BACKUP - $date] - Une erreur s'est produite lors de l'enregistrement de la backup de la base de donnée postgres ($pg_name)." >> $log_file;
+                    echo "[BACKUP - $date] - Un erreur s'est produite lors de l'enregistrement de la backup de la base de donnée postgres ($pg_name)."
                 fi
                 unset PGPASSWORD;
             done
