@@ -22,7 +22,6 @@ pg_names=("basetest3" "basetest4") # Nom des bases de données PostgreSQL
 # Path configuration
 backup_directory="./backups-saved" # Répertoire temporaire de copie des fichiers de backups
 app_directory="./app-deploy" # Répertoire contenant l'ensemble des applications
-log_file="./log/backup.log" # Fichier log
 
 app_backup() {
 
