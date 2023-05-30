@@ -79,7 +79,7 @@ database_backup() {
             done
         fi
     else
-        echo "[BACKUP - $date] - Vous n'avez pas renseigner les noms de bases de données." >> $log_file;
+        echo "[BACKUP - $date] - Vous n'avez pas renseigner les noms de bases de données.";
     fi
 }
 
