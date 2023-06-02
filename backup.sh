@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# CRONTAB (crontab -e) 0 20 * * 6 /var/backup/backup.sh >> /var/log/backup.log 2>&1s
+# CRONTAB (crontab -e) 0 20 * * 6 /var/backup/backup.sh >> /var/log/backup.log 2>&1
 
 date=$(date +"%Y-%m-%d:%H:%M:%S")
 
