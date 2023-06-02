@@ -7,21 +7,22 @@ date=$(date +"%Y-%m-%d:%H:%M:%S")
 # Début de la configuration
 
 # Database configuration (MariaDB)
-db_host="example"
+db_host="localhost"
 db_user="example"
 db_password="example"
 db_names=("basetest1" "basetest2") # Nom des bases de données MariaDB
 
 # Database configuration (PostgreSQL)
-pg_host="example"
+pg_host="localhost"
 pg_port="5432"
 pg_user="example"
 pg_password="example"
-pg_names=("basetest3" "basetest4") # Nom des bases de données PostgreSQL
+pg_names=("basetest3") # Nom des bases de données PostgreSQL
 
 # Path configuration
-backup_directory="./backups-saved" # Répertoire temporaire de copie des fichiers de backups
-app_directory="./app-deploy" # Répertoire contenant l'ensemble des applications
+backup_directory="/var/backup/backups-saved" # Répertoire temporaire de copie des fichiers de backups
+app_directory="/var/www" # Répertoire contenant l'ensemble des applications
+destination_path="/home/user" # Répertoire de destination des fichiers
 
 app_backup() {
 
@@ -41,7 +42,7 @@ app_backup() {
                 file_export=$backup_directory/$(basename "$app")-backup-app
                 cp -r $app $file_export;
                 echo "[BACKUP - $date] - Compression du répertoire $(basename "$app")-backup..."
-                tar -czf $(basename "$file_export")-app$date.tar.gz $backup_directory/$(basename "$app")-backup-app
+                tar -czf $destination_path/$(basename "$file_export")-$date.tar.gz -P $backup_directory/$(basename "$app")-backup-app
                 sleep 0.5;
             done;
 
@@ -58,7 +59,7 @@ app_backup() {
 database_backup() {
     if [ ${#db_names[@]} -gt 0 ]; then
         for db_name in "${db_names[@]}"; do
-            mysqldump --host=$db_host --user=$db_user --password=$db_password --lock-tables $db_name > "$db_name-backup-db$date.sql"
+            mysqldump --host=$db_host --user=$db_user --password=$db_password --lock-tables $db_name > "/$destination_path/$db_name-backup-db$date.sql"
             if [ $? -eq 0 ]; then
                 echo "[BACKUP - $date] - Enregistrement de la base ($db_name) dans le répertoire courrant."
             else
@@ -67,8 +68,8 @@ database_backup() {
         done
         if [ ${#pg_names[@]} -gt 0 ]; then
             for pg_name in "${pg_names[@]}"; do
-                export PGPASSWORD="pg_password"
-                pg_dump -h "$pg_host" -p "$pg_port" -U "$pg_user" -d "$pg_name" -f "$pg_name-backup-db-postgres$date.sql"
+                export PGPASSWORD="$pg_password"
+                pg_dump -h "$pg_host" -p "$pg_port" -U "$pg_user" -d "$pg_name" -f "$destination_path/$pg_name-backup-db-postgres$date.sql"
                 if [ $? -eq 0 ]; then
                     echo "[BACKUP - $date] - Enregistrement de la base postgres ($pg_name) dans le répertoire courrant." & echo "[BACKUP - $date]"
                 else
@@ -82,4 +83,5 @@ database_backup() {
     fi
 }
 
-rm -f ./*-backup-db* & sleep 0.5 & database_backup & rm -f ./*-backup-db* & rm -f ./*-backup-app* & sleep 0.5 & database_backup & app_backup
+rm $destination_path/*.sql && rm $destination_path/*.tar.gz
+database_backup && app_backup
